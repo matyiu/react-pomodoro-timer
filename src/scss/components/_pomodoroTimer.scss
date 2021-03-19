@@ -1,0 +1,64 @@
+.pomodoro-timer {
+    background: $background;
+    box-shadow: 0px 2px 10px rgba(darken($color: $background, $amount: 40%), 0.18);
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 300px;
+    margin: 0 auto;
+
+    h3 {
+        font-size: 1.75rem;
+        margin: 0;
+        padding: 0;
+        display: inline-block;
+        margin-right: 15px;
+    }
+
+    .timer-round {
+        display: inline-block;
+        font-size: 1.25rem;
+    }
+
+    .timer {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px auto;
+
+        &-text {
+            font-size: 4rem;
+        }
+    }
+
+    .timer-controls {
+        display: flex;
+        justify-content: center;
+
+        .timer-pause,
+        .timer-next {
+            background: none;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-family: "Roboto", sans-serif;
+            border-radius: 3px;
+            font-size: 1rem;
+            transition: background 0.1s ease-out;
+        }
+
+        .timer-pause {
+            background: $primary;
+            margin-right: 10px;
+
+            &:hover {
+                background: lighten($primary, 4%);
+            }
+        }
+
+        .timer-next:hover {
+            background: $primary;
+        }
+    }
+}
