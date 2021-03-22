@@ -1,9 +1,18 @@
 import React, { useRef, useState } from 'react'
 
-const WORKTIME = 1500;
+const WORKTIME = 10;
+const SHORTRESTTIME = 5;
+const LONGBREAKTIME = 10;
+const LONGBREAKCYCLE = 4;
+
+const ucfirst = (([char, ...rest]) => {
+    return [char.toUpperCase(), ...rest].join('');
+});
 
 const PomodoroTimer = () => {
-    const [time, setTime] = useState(WORKTIME);
+    const [ time, setTime ] = useState(WORKTIME);
+    const [ cycle, setCycle ] = useState('work');
+    const [ position, setPosition ] = useState(0);
     const timer = useRef(null);
 
     const handlePlayTimer = () => {
@@ -18,7 +27,27 @@ const PomodoroTimer = () => {
                     if (prevTime < 1) {
                         timer.current = clearInterval(timer.current);
 
-                        return WORKTIME;
+                        if (cycle === 'work') {
+                            setCycle('short break');
+                            setPosition(prevPosition => prevPosition + 1);
+
+                            if (position === (LONGBREAKCYCLE - 1)) {
+                                setCycle('long break');
+
+                                return LONGBREAKTIME
+                            }
+
+                            return SHORTRESTTIME;
+                        } else if (cycle === 'long break') {
+                            setCycle('work');
+                            setPosition(0)
+
+                            return WORKTIME;
+                        } else if (cycle === 'short break') {
+                            setCycle('work');
+
+                            return WORKTIME;
+                        }
                     }
 
                     return prevTime - 1;
@@ -33,7 +62,7 @@ const PomodoroTimer = () => {
 
     return (
         <div className="pomodoro-timer">
-            <h3>Work</h3>
+            <h3>{ucfirst(cycle)}</h3>
             <p className="timer-round">3/4</p>
             <div className="timer">
                 <span className="timer-text">{minutes}:{seconds < 10 ? '0' + seconds : seconds}</span>
