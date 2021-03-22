@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-const WORKTIME = 10;
-const SHORTRESTTIME = 5;
-const LONGBREAKTIME = 10;
+const WORKTIME = 1500;
+const SHORTRESTTIME = 300;
+const LONGBREAKTIME = 1200;
 const LONGBREAKCYCLE = 4;
 
 const ucfirst = (([char, ...rest]) => {
@@ -78,15 +78,21 @@ const PomodoroTimer = () => {
         }
     }
 
+    
     const minutes = Math.trunc(time / 60);
     const seconds = time - (minutes * 60);
+    const prettyTimer = minutes + ':' + (seconds < 10 ? '0' + seconds : seconds);
+
+    useEffect(() => {
+        document.title = `${prettyTimer} Pomodoro Timer React.js`
+    }, [prettyTimer]);
 
     return (
         <div className="pomodoro-timer">
             <h3>{ucfirst(cycle)}</h3>
             <p className="timer-round">{position + 1}/{LONGBREAKCYCLE}</p>
             <div className="timer">
-                <span className="timer-text">{minutes}:{seconds < 10 ? '0' + seconds : seconds}</span>
+                <span className="timer-text">{prettyTimer}</span>
             </div>
             <div className="timer-controls">
                 <button onClick={handlePlayTimer} className="timer-pause">Start</button>
