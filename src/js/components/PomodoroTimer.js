@@ -15,6 +15,39 @@ const PomodoroTimer = () => {
     const [ position, setPosition ] = useState(0);
     const timer = useRef(null);
 
+    const setBreak = () => {
+        if (position === (LONGBREAKCYCLE - 1)) {
+            setCycle('long break');
+            
+            return LONGBREAKTIME
+        }
+        
+        setCycle('short break');
+        return SHORTRESTTIME;
+    }
+
+    const setWork = () => {
+        setCycle('work');
+        setPosition(prevPosition => 
+            prevPosition === 3 ? 0 : prevPosition + 1);
+
+        return WORKTIME;
+    }
+
+    const updateTimer = prevTime => {
+        if (prevTime < 1) {
+            timer.current = clearInterval(timer.current);
+
+            if (cycle === 'work') {
+                return setBreak();
+            } else {
+                return setWork();
+            }
+        }
+
+        return prevTime - 1;
+    }
+
     const handlePlayTimer = () => {
         if (timer.current) {
             timer.current = clearInterval(timer.current);
@@ -23,38 +56,26 @@ const PomodoroTimer = () => {
 
         timer.current = setInterval(
             () => {
-                setTime(prevTime => {
-                    if (prevTime < 1) {
-                        timer.current = clearInterval(timer.current);
-
-                        if (cycle === 'work') {
-                            setCycle('short break');
-                            setPosition(prevPosition => prevPosition + 1);
-
-                            if (position === (LONGBREAKCYCLE - 1)) {
-                                setCycle('long break');
-
-                                return LONGBREAKTIME
-                            }
-
-                            return SHORTRESTTIME;
-                        } else if (cycle === 'long break') {
-                            setCycle('work');
-                            setPosition(0)
-
-                            return WORKTIME;
-                        } else if (cycle === 'short break') {
-                            setCycle('work');
-
-                            return WORKTIME;
-                        }
-                    }
-
-                    return prevTime - 1;
-                })
+                setTime(updateTimer)
             },
             1000
         );
+    }
+
+    const handleNext = () => {
+        if (cycle === 'work') {
+            if (position === (LONGBREAKCYCLE - 1)) {
+                setCycle('long break');
+                setTime(LONGBREAKTIME);
+            } else {
+                setCycle('short break');
+                setTime(SHORTRESTTIME)
+            }
+        } else {
+            setCycle('work');
+            setTime(WORKTIME);
+            setPosition(prevPosition => prevPosition === 3 ? 0 : prevPosition + 1);
+        }
     }
 
     const minutes = Math.trunc(time / 60);
@@ -63,13 +84,16 @@ const PomodoroTimer = () => {
     return (
         <div className="pomodoro-timer">
             <h3>{ucfirst(cycle)}</h3>
-            <p className="timer-round">3/4</p>
+            <p className="timer-round">{position + 1}/{LONGBREAKCYCLE}</p>
             <div className="timer">
                 <span className="timer-text">{minutes}:{seconds < 10 ? '0' + seconds : seconds}</span>
             </div>
             <div className="timer-controls">
                 <button onClick={handlePlayTimer} className="timer-pause">Start</button>
-                <button className="timer-next">Break <i class="fas fa-arrow-right"></i></button>
+                <button className="timer-next" onClick={handleNext}>
+                    Next: {cycle === 'work' ? 'Break' : 'Work'} 
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
         </div>
     );
