@@ -1,3 +1,14 @@
+%button {
+    background: none;
+    padding: 10px 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-family: "Roboto", sans-serif;
+    border-radius: 3px;
+    font-size: 1rem;
+    transition: all 0.1s ease-out;
+}
+
 .pomodoro-timer {
     background: $background;
     box-shadow: 0px 2px 10px rgba(darken($color: $background, $amount: 40%), 0.18);
@@ -5,6 +16,7 @@
     padding: 30px;
     max-width: 300px;
     margin: 0 auto;
+    position: relative;
 
     h3 {
         font-size: 1.75rem;
@@ -32,23 +44,42 @@
         }
     }
 
+    .timer-view {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        @extend %button;
+
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: rgb(236, 236, 236);
+    }
+
+    .timer-form {
+        margin-top: 20px;
+
+        .timer-row {
+            display: flex;
+            flex-direction: row;
+            
+            label {
+                flex-basis: 50%;
+                text-align: right;
+                margin-right: 15px;
+            }
+        }
+    }
+
     .timer-controls {
         display: flex;
         justify-content: center;
 
-        .timer-pause,
-        .timer-next {
-            background: none;
-            padding: 10px 20px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            font-family: "Roboto", sans-serif;
-            border-radius: 3px;
-            font-size: 1rem;
-            transition: all 0.1s ease-out;
-        }
-
         .timer-pause {
+            @extend %button;
             background: white;
             border: 2px solid white;
             margin-right: 10px;
@@ -59,6 +90,7 @@
         }
 
         .timer-next {
+            @extend %button;
             border: 2px solid white;
 
             &:hover {
