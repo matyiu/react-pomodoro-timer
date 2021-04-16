@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
+import useForm from '../hooks/useForm';
 
-const WORKTIME = 1500;
-const SHORTRESTTIME = 300;
-const LONGBREAKTIME = 1200;
 const LONGBREAKCYCLE = 4;
 
 const ucfirst = (([char, ...rest]) => {
@@ -28,7 +26,25 @@ const PomodoroView = ({position, prettyTimer, cycle, onPlay, onNext, onView}) =>
     );
 }
 
-const ConfigurationView = ({onAutomaticBreak, automaticBreak, onView}) => {
+const ConfigurationView = ({configuration, onChangeForm, onView}) => {
+    const { 
+        automaticBreak, 
+    } = configuration;
+
+    const workTime = configuration.workTime / 60;
+    const shortBreakTime = configuration.shortBreakTime / 60;
+    const longBreakTime = configuration.longBreakTime / 60;
+
+    const handleTimeChange = evt => {
+        const value = evt.target.value * 60;
+        const name = evt.target.name;
+
+        onChangeForm({target: {
+            value,
+            name
+        }});
+    }
+
     return (
         <>
             <h3>Configuration</h3>
@@ -36,8 +52,23 @@ const ConfigurationView = ({onAutomaticBreak, automaticBreak, onView}) => {
             <div className="timer-form">
                 <div className="timer-row">
                     <label htmlFor="automatic-breaks">Automatic Breaks?</label>
-                    <input type="checkbox" id="automatic-breaks" 
-                        onChange={onAutomaticBreak} defaultChecked={automaticBreak}/>
+                    <input type="checkbox" id="automatic-breaks" name="automaticBreak"
+                        onChange={onChangeForm} defaultChecked={automaticBreak}/>
+                </div>
+                <div className="timer-row">
+                    <label htmlFor="work-time">Work Time:</label>
+                    <input type="number" id="work-time" min="0" value={workTime}
+                        max="120" name="workTime" onChange={handleTimeChange} />
+                </div>
+                <div className="timer-row">
+                    <label htmlFor="short-break-time">Short Break Time:</label>
+                    <input type="number" id="short-break-time" min="0" value={shortBreakTime}
+                        max="30" name="shortBreakTime" onChange={handleTimeChange} />
+                </div>
+                <div className="timer-row">
+                    <label htmlFor="long-break-time">Long Break Time:</label>
+                    <input type="number" id="long-break-time" min="0" value={longBreakTime}
+                        max="60" name="longBreakTime" onChange={handleTimeChange} />
                 </div>
             </div>
         </>
@@ -45,23 +76,28 @@ const ConfigurationView = ({onAutomaticBreak, automaticBreak, onView}) => {
 }
 
 const PomodoroTimer = () => {
-    const [ time, setTime ] = useState(WORKTIME);
     const [ cycle, setCycle ] = useState('work');
     const [ position, setPosition ] = useState(0);
     const [ view, setView ] = useState(0);
-    const [ automaticBreak, setAutomaticBreak ] = useState(false);
-    const [ timerState, setTimerState ] = useState('stoped');
+    const [ configuration, setConfiguration ] = useForm({
+        automaticBreak: false,
+        workTime: 1500,
+        shortBreakTime: 300,
+        longBreakTime: 1200
+    });
+    const [ time, setTime ] = useState(configuration.workTime);
+    const [ timerState, setTimerState ] = useState('stopped');
     const timer = useRef(null);
 
     const setBreak = () => {
         if (position === (LONGBREAKCYCLE - 1)) {
             setCycle('long break');
             
-            return LONGBREAKTIME
+            return configuration.longBreakTime
         }
         
         setCycle('short break');
-        return SHORTRESTTIME;
+        return configuration.shortBreakTime;
     }
 
     const setWork = () => {
@@ -69,7 +105,7 @@ const PomodoroTimer = () => {
         setPosition(prevPosition => 
             prevPosition === 3 ? 0 : prevPosition + 1);
 
-        return WORKTIME;
+        return configuration.workTime;
     }
 
     const running = () => {
@@ -90,12 +126,12 @@ const PomodoroTimer = () => {
 
     const stop = () => {
         timer.current = clearInterval(timer.current);
-        setTimerState(!automaticBreak || cycle !== 'work' ? 'stopped' : 'automatic');
+        setTimerState(!configuration.automaticBreak || cycle !== 'work' ? 'stopped' : 'automatic');
     }
 
     const play = () => {
         timer.current = setInterval(running, 1000);
-        setTimerState(automaticBreak ? 'automatic' : 'running');
+        setTimerState(configuration.automaticBreak ? 'automatic' : 'running');
     }
 
     const handlePlayTimer = () => {
@@ -116,7 +152,6 @@ const PomodoroTimer = () => {
         });
     }
 
-    const handleAutomaticBreak = () => setAutomaticBreak(!automaticBreak);
     const handleConfigurationView = () => setView(1);
     const handlePomodoroView = () => setView(0);
     
@@ -134,6 +169,18 @@ const PomodoroTimer = () => {
         }
     }, [cycle, timerState]);
 
+    useEffect(() => {
+        if (timerState === 'stopped') {
+            if (cycle === 'work') {
+                setTime(configuration.workTime);
+            } else if (cycle === 'short break') {
+                setTime(configuration.shortBreakTime);
+            } else {
+                setTime(configuration.longBreakTime);
+            }
+        }
+    }, [configuration]);
+
     return (
         <div className="pomodoro-timer">
             {
@@ -147,8 +194,8 @@ const PomodoroTimer = () => {
                     onView={handleConfigurationView}
                 /> :
                 <ConfigurationView 
-                    automaticBreak={automaticBreak} 
-                    onAutomaticBreak={handleAutomaticBreak} 
+                    configuration={configuration}
+                    onChangeForm={setConfiguration}
                     onView={handlePomodoroView}
                 />
             }
