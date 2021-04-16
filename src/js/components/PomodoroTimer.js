@@ -37,7 +37,7 @@ const ConfigurationView = ({onAutomaticBreak, automaticBreak, onView}) => {
                 <div className="timer-row">
                     <label htmlFor="automatic-breaks">Automatic Breaks?</label>
                     <input type="checkbox" id="automatic-breaks" 
-                        onChange={onAutomaticBreak} value={automaticBreak}/>
+                        onChange={onAutomaticBreak} defaultChecked={automaticBreak}/>
                 </div>
             </div>
         </>
@@ -50,6 +50,7 @@ const PomodoroTimer = () => {
     const [ position, setPosition ] = useState(0);
     const [ view, setView ] = useState(0);
     const [ automaticBreak, setAutomaticBreak ] = useState(false);
+    const [ timerState, setTimerState ] = useState('stoped');
     const timer = useRef(null);
 
     const setBreak = () => {
@@ -71,48 +72,48 @@ const PomodoroTimer = () => {
         return WORKTIME;
     }
 
-    const updateTimer = prevTime => {
-        if (prevTime < 1) {
-            timer.current = clearInterval(timer.current);
+    const running = () => {
+        setTime(prevTime => {
+            if (prevTime < 1) {
+                stop();
 
+                if (cycle === 'work') {
+                    setTime(setBreak());
+                } else {
+                    setTime(setWork());
+                }
+            } else {
+                return prevTime - 1;
+            }
+        });
+    }
+
+    const stop = () => {
+        timer.current = clearInterval(timer.current);
+        setTimerState(!automaticBreak || cycle !== 'work' ? 'stopped' : 'automatic');
+    }
+
+    const play = () => {
+        timer.current = setInterval(running, 1000);
+        setTimerState(automaticBreak ? 'automatic' : 'running');
+    }
+
+    const handlePlayTimer = () => {
+        if (timerState === 'running') {
+            stop();
+        } else {
+            play();
+        }
+    }
+
+    const handleNext = () => {
+        setTime(() => {
             if (cycle === 'work') {
                 return setBreak();
             } else {
                 return setWork();
             }
-        }
-
-        return prevTime - 1;
-    }
-
-    const handlePlayTimer = () => {
-        if (timer.current) {
-            timer.current = clearInterval(timer.current);
-            return;
-        }
-
-        timer.current = setInterval(
-            () => {
-                setTime(updateTimer)
-            },
-            1000
-        );
-    }
-
-    const handleNext = () => {
-        if (cycle === 'work') {
-            if (position === (LONGBREAKCYCLE - 1)) {
-                setCycle('long break');
-                setTime(LONGBREAKTIME);
-            } else {
-                setCycle('short break');
-                setTime(SHORTRESTTIME)
-            }
-        } else {
-            setCycle('work');
-            setTime(WORKTIME);
-            setPosition(prevPosition => prevPosition === 3 ? 0 : prevPosition + 1);
-        }
+        });
     }
 
     const handleAutomaticBreak = () => setAutomaticBreak(!automaticBreak);
@@ -126,6 +127,12 @@ const PomodoroTimer = () => {
     useEffect(() => {
         document.title = `${prettyTimer} Pomodoro Timer React.js`
     }, [prettyTimer]);
+
+    useEffect(() => {
+        if (cycle.match('break') && timerState === 'automatic') {
+            play();
+        }
+    }, [cycle, timerState]);
 
     return (
         <div className="pomodoro-timer">
