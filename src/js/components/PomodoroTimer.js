@@ -89,6 +89,8 @@ const PomodoroTimer = () => {
     const [ time, setTime ] = useState(configuration.workTime);
     const [ timerState, setTimerState ] = useState('stopped');
     const timer = useRef(null);
+    const breakAudio = useRef(null);
+    const workAudio = useRef(null);
 
     const setBreak = () => {
         if (position === (LONGBREAKCYCLE - 1)) {
@@ -116,8 +118,14 @@ const PomodoroTimer = () => {
 
                 if (cycle === 'work') {
                     setTime(setBreak());
+                    if (breakAudio.current.HAVE_ENOUGH_DATA === 4) {
+                        breakAudio.current.play();
+                    }
                 } else {
                     setTime(setWork());
+                    if (workAudio.current.HAVE_ENOUGH_DATA === 4) {
+                        workAudio.current.play();
+                    }
                 }
             } else {
                 return prevTime - 1;
@@ -181,6 +189,11 @@ const PomodoroTimer = () => {
             }
         }
     }, [configuration]);
+
+    useEffect(() => {
+        workAudio.current = new Audio('https://freesound.org/data/previews/377/377639_7003434-lq.mp3');
+        breakAudio.current = new Audio('https://freesound.org/data/previews/264/264594_65641-lq.mp3');
+    }, []);
 
     return (
         <div className="pomodoro-timer">
