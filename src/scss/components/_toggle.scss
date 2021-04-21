@@ -1,0 +1,35 @@
+.toggle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    &-body {
+        width: 50px;
+        height: 25px;
+        background: #84cecb;
+        border-radius: 20px;
+        transition: background 0.1s ease-in-out;
+    }
+
+    &-circle {
+        width: 30px;
+        height: 30px;
+        background: white;
+        border-radius: 15px;
+        position: absolute;
+        transition: left 0.1s ease-in-out;
+        left: 0;
+    }
+
+    &[data-checked="true"] {
+        .toggle-body {
+            background: #82fffb;
+        }
+
+        .toggle-circle {
+            left: calc(100% - 30px);
+        }
+    } 
+        
+}

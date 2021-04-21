@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import useForm from '../hooks/useForm';
+import Toggle from './Toggle';
 
 const LONGBREAKCYCLE = 4;
 
@@ -52,8 +53,8 @@ const ConfigurationView = ({configuration, onChangeForm, onView}) => {
             <div className="timer-form">
                 <div className="timer-row">
                     <label htmlFor="automatic-breaks">Automatic Breaks?</label>
-                    <input type="checkbox" id="automatic-breaks" name="automaticBreak"
-                        onChange={onChangeForm} defaultChecked={automaticBreak}/>
+                    <Toggle onChange={onChangeForm} value={automaticBreak} 
+                        name="automaticBreak" id="automatic-breaks" />
                 </div>
                 <div className="timer-row">
                     <label htmlFor="work-time">Work Time:</label>
